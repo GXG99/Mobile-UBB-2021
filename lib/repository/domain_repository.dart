@@ -14,6 +14,10 @@ class DomainRepository extends ChangeNotifier {
     }
   }
 
+  List<Domain> getDomains() {
+    return domains;
+  }
+
   int getLength() {
     return domains.length;
   }
@@ -34,5 +38,13 @@ class DomainRepository extends ChangeNotifier {
 
   void removeDomain(int id) {
     domains.removeWhere((domain) => domain.id == id);
+  }
+
+  void updateDomain(Domain domain) {
+    for (int i = 0; i < domains.length; ++i) {
+      if (domain.id == domains[i].id) {
+        domains[i] = domain;
+      }
+    }
   }
 }

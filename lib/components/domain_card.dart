@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:trivia_game/domain/domain.dart';
+import 'package:trivia_game/screens/update_screen.dart';
 
 class DomainCard extends StatelessWidget {
-  DomainCard({required this.domain});
   final Domain domain;
+
+  DomainCard({this.domain});
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: Key(domain.id.toString()),
       decoration: BoxDecoration(
         color: Colors.deepPurple.shade300,
         borderRadius: BorderRadius.circular(10.0),
@@ -53,18 +57,16 @@ class DomainCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UpdateScreen(domain.id),
+                          ),
+                        );
+                      },
                       child: Text(
                         'EDIT',
-                        style: TextStyle(color: Colors.deepPurple.shade300),
-                      ),
-                      style:
-                          TextButton.styleFrom(backgroundColor: Colors.white),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'REMOVE',
                         style: TextStyle(color: Colors.deepPurple.shade300),
                       ),
                       style:
