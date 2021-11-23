@@ -21,7 +21,7 @@ class TriviaGame extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => AtlasScreen(),
-          // '/atlas': (context) => AtlasScreen(),
+          '/atlas': (context) => AtlasScreen(),
         },
       ),
     );
