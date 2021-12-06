@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:trivia_game/bloc/domain_bloc.dart';
-import 'package:trivia_game/bloc/domain_bloc_provider.dart';
 import 'package:trivia_game/components/domain_card.dart';
+import 'package:trivia_game/database/domain_database.dart';
 import 'package:trivia_game/domain/domain.dart';
 import 'package:flutter/src/widgets/dismissible.dart';
+
+import 'add_screen.dart';
 
 class AtlasScreen extends StatefulWidget {
   @override
@@ -13,93 +13,93 @@ class AtlasScreen extends StatefulWidget {
 }
 
 class _AtlasScreenState extends State<AtlasScreen> {
-  final titleController = TextEditingController();
-  final descriptionController = TextEditingController();
+  List<Domain> domains;
 
-  void controller(DomainCard DomainCard, String action) {}
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    refreshDomains();
+  }
+
+  Future refreshDomains() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    domains = await DomainDatabase.instance.readAllDomains();
+
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Domain>>(
-      stream: DomainBlocProvider.of<DomainBloc>(context).domainStream(),
-      builder: (context, snapshot) {
-        final domains = snapshot.data;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Atlas'),
-            backgroundColor: Colors.deepPurple.shade300,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Atlas'),
+        backgroundColor: Colors.deepPurple.shade300,
+        actions: [
+          TextButton(
+            onPressed: () {
+              refreshDomains();
+            },
+            child: Icon(
+              Icons.refresh,
+              color: Colors.white,
+            ),
+          )
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: createList(domains),
           ),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                flex: 7,
-                child: createList(domains),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      icon: FaIcon(FontAwesomeIcons.book),
-                      hintText: 'Domain title',
-                    ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddScreen(
+                () => {
+                  setState(
+                    () => {
+                      refreshDomains(),
+                    },
                   ),
-                ),
+                },
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(
-                      icon: Padding(
-                        padding: EdgeInsets.only(right: 5, left: 5),
-                        child: FaIcon(FontAwesomeIcons.info),
-                      ),
-                      hintText: 'Domain description',
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      if (titleController.text.isNotEmpty &&
-                          descriptionController.text.isNotEmpty) {
-                        Domain domain = Domain(
-                            title: titleController.text,
-                            description: descriptionController.text);
-                        DomainBlocProvider.of<DomainBloc>(context)
-                            .addDomain(domain);
-                      }
-                      titleController.clear();
-                      descriptionController.clear();
-                    });
-                  },
-                  child: const Text(
-                    'Add domain',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  style: TextButton.styleFrom(
-                      backgroundColor: Colors.deepPurple.shade300),
-                ),
-              )
-            ],
-          ),
-        );
-      },
+            ),
+          );
+        },
+        child: const Icon(
+          Icons.add,
+          color: Colors.deepPurple,
+          size: 30,
+        ),
+      ),
     );
   }
 
   Widget createList(List<Domain> domains) {
-    return ListView.builder(
-      itemCount: domains.length,
-      itemBuilder: (BuildContext context, int position) {
-        return createItem(domains[position]);
-      },
+    if (domains != null) {
+      return ListView.builder(
+        itemCount: domains.length,
+        itemBuilder: (BuildContext context, int position) {
+          return createItem(domains[position]);
+        },
+      );
+    }
+    return Container(
+      width: 0,
+      height: 0,
     );
   }
 
@@ -107,10 +107,20 @@ class _AtlasScreenState extends State<AtlasScreen> {
     return Dismissible(
       key: UniqueKey(),
       onDismissed: (direction) {
-        DomainBlocProvider.of<DomainBloc>(context).deleteDomain(domain.id);
+        DomainDatabase.instance.delete(domain.id);
+        refreshDomains();
       },
       confirmDismiss: confirmDelete,
-      child: createCard(domain),
+      child: DomainCard(
+        domain: domain,
+        refreshCallback: () => {
+          setState(
+            () => {
+              refreshDomains(),
+            },
+          ),
+        },
+      ),
     );
   }
 
@@ -133,9 +143,5 @@ class _AtlasScreenState extends State<AtlasScreen> {
             ],
           );
         });
-  }
-
-  Widget createCard(Domain domain) {
-    return DomainCard(domain: domain);
   }
 }

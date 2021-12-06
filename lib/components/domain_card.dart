@@ -5,7 +5,9 @@ import 'package:trivia_game/screens/update_screen.dart';
 class DomainCard extends StatelessWidget {
   final Domain domain;
 
-  DomainCard({this.domain});
+  VoidCallback refreshCallback;
+
+  DomainCard({this.domain, this.refreshCallback});
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +63,8 @@ class DomainCard extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => UpdateScreen(domain.id),
+                            builder: (context) =>
+                                UpdateScreen(domain.id, refreshCallback),
                           ),
                         );
                       },

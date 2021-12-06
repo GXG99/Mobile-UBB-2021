@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:trivia_game/bloc/bloc.dart';
+import 'package:trivia_game/database/domain_database.dart';
 import 'package:trivia_game/domain/domain.dart';
 import 'package:trivia_game/repository/domain_repository.dart';
 
 class DomainBloc implements AbstractBloc {
   final _controller = StreamController<List<Domain>>();
-  DomainRepository _domainRepository = DomainRepository();
+  final DomainRepository _domainRepository = DomainRepository();
 
   Stream<List<Domain>> domainStream() {
     final domainList = _domainRepository.getDomains();
@@ -14,8 +15,13 @@ class DomainBloc implements AbstractBloc {
     return _controller.stream;
   }
 
+  int getDomainLength() {
+    return _domainRepository.getLength();
+  }
+
   void deleteDomain(int id) {
     _domainRepository.removeDomain(id);
+    _controller.sink.add(_domainRepository.getDomains());
   }
 
   Domain getDomainById(int id) {

@@ -38,6 +38,7 @@ class DomainRepository extends ChangeNotifier {
 
   void removeDomain(int id) {
     domains.removeWhere((domain) => domain.id == id);
+    notifyListeners();
   }
 
   void updateDomain(Domain domain) {
